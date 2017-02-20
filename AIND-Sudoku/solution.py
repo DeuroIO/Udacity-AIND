@@ -1,3 +1,4 @@
+import re;
 assignments = []
 
 def assign_value(values, box, value):
@@ -21,6 +22,16 @@ def naked_twins(values,diagonal=True):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+    unitlist_temp = d_unitlist if diagonal else s_unitlist
+    for unit in unitlist_temp:
+        for box in unit:
+            digits = values[box]
+            if(len(digits) > 1):
+                twins = [temp_box for temp_box in unit if values[temp_box] == digits]
+                if (len(twins) == len(digits)):
+                    for b in unit:
+                        if (values[b] != digits):
+                            values[b] = re.sub('['+digits+']','',values[b])
     return values
 
 
