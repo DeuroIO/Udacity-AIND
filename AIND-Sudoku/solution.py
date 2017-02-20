@@ -1,5 +1,7 @@
 import re;
 assignments = []
+#Global variable to keep track of should using disgonal version
+diagonal = True
 
 def assign_value(values, box, value):
     """
@@ -11,7 +13,7 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
-def naked_twins(values,diagonal=True):
+def naked_twins(values):
     """Eliminate values using the naked twins strategy.
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
@@ -22,7 +24,10 @@ def naked_twins(values,diagonal=True):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
-    unitlist_temp = d_unitlist if diagonal else s_unitlist
+    unitlist_temp = diagonal_unitlist
+    if diagonal is False:
+        unitlist_temp = original_unitlist
+
     for unit in unitlist_temp:
         for box in unit:
             digits = values[box]
@@ -30,8 +35,7 @@ def naked_twins(values,diagonal=True):
                 twins = [temp_box for temp_box in unit if values[temp_box] == digits]
                 if (len(twins) == len(digits)):
                     for b in unit:
-                        if (values[b] != digits):
-                            values[b] = re.sub('['+digits+']','',values[b])
+                        values[b] = re.sub('['+digits+']','',values[b]) if (values[b] != digits) else values[b]
     return values
 
 
@@ -50,15 +54,15 @@ column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 diagonal_units = [[r+c for r, c in zip(rows, cols)], [r+c for r, c in zip(rows, cols[::-1])]]
 
-#Standard version sudoku
-s_unitlist = row_units + column_units + square_units
-s_units = dict((s, [u for u in s_unitlist if s in u]) for s in boxes)
-s_peers = dict((s, set(sum(s_units[s],[]))-set([s])) for s in boxes)
+#Original version sudoku
+original_unitlist = row_units + column_units + square_units
+original_unit = dict((s, [u for u in original_unitlist if s in u]) for s in boxes)
+original_peers = dict((s, set(sum(original_unit[s],[]))-set([s])) for s in boxes)
 
 # Diagonal version sudoku
-d_unitlist = row_units + column_units + square_units + diagonal_units
-d_units = dict((s, [u for u in d_unitlist if s in u]) for s in boxes)
-d_peers = dict((s, set(sum(d_units[s],[]))-set([s])) for s in boxes)
+diagonal_unitlist = row_units + column_units + square_units + diagonal_units
+diagonal_unit = dict((s, [u for u in diagonal_unitlist if s in u]) for s in boxes)
+diagonal_peers = dict((s, set(sum(diagonal_unit[s],[]))-set([s])) for s in boxes)
 
 
 
@@ -94,16 +98,13 @@ def display(values):
         if r in 'CF': print(line)
     return
 
-def eliminate(values,diagonal=True):
-    """Eliminate the immediate impossible values indicated by following basic rules.
-
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-        diagonal(bool): whether this sudoku is a diagonal one
-    Returns:
-        the values dictionary with the elimination strategy applied.
+def eliminate(values):
     """
-    peers_temp = d_peers if diagonal else s_peers
+    Go through all the boxes, and whenever there is a box with a value, eliminate this value from the values of all its peers.
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form.
+    """
+    peers_temp = diagonal_peers if diagonal else original_peers
     # Extract the solved values first
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     for box in solved_values:
@@ -115,16 +116,13 @@ def eliminate(values,diagonal=True):
                 assign_value(values, peer, values[peer].replace(digit,''))
     return values
 
-def only_choice(values,diagonal=True):
-    """Eliminate values using the Only-Choice strategy.
-
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-        diagonal(bool): whether this sudoku is a diagonal one
-    Returns:
-        the values dictionary with the Only-Choice strategy applied.
+def only_choice(values):
     """
-    unitlist_temp = d_unitlist if diagonal else s_unitlist
+    Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form.
+    """
+    unitlist_temp = diagonal_unitlist if diagonal else original_unitlist
     for unit in unitlist_temp:
         for digit in '123456789':
             # Search for a digit which only appeared once inside each unit
@@ -134,15 +132,13 @@ def only_choice(values,diagonal=True):
                 assign_value(values, dplaces[0], digit)
     return values
 
-def reduce_puzzle(values,diagonal=True):
-    """Reduce the possible values in the board by recursivly apply the above
-        three strategies.
-
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-        diagonal(bool): whether this sudoku is a diagonal one
-    Returns:
-        the values dictionary with the three strategies appled.
+def reduce_puzzle(values):
+    """
+    Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
+    If the sudoku is solved, return the sudoku.
+    If after an iteration of both functions, the sudoku remains the same, return the sudoku.
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form.
     """
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     stalled = False
@@ -150,11 +146,11 @@ def reduce_puzzle(values,diagonal=True):
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         # Use the Eliminate Strategy
-        values = eliminate(values,diagonal)
+        values = eliminate(values)
         # Use the Only Choice Strategy
-        values = only_choice(values,diagonal)
+        values = only_choice(values)
         # Use the Naked Twin Strategy
-        values = naked_twins(values,diagonal)
+        values = naked_twins(values)
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
@@ -163,18 +159,10 @@ def reduce_puzzle(values,diagonal=True):
             return False
     return values
 
-def search(values,diagonal=True):
-    """Search through the tree of all possible sudokus to find a solution and avoid
-        to stuck in a failure leaf.
-
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-        diagonal(bool): whether this sudoku is a diagonal one
-    Returns:
-        the solved sudoku values dictionary.
-    """
+def search(values):
+    "Using depth-first search and propagation, try all possible values."
     # First, reduce the puzzle using the previous function
-    values = reduce_puzzle(values,diagonal=True)
+    values = reduce_puzzle(values)
     if values is False:
         return False ## Failed earlier
     if all(len(values[s]) == 1 for s in boxes):
@@ -190,7 +178,7 @@ def search(values,diagonal=True):
             return attempt
     return values
 
-def solve(grid,diagonal=True):
+def solve(grid):
     """
     Find the solution to a Sudoku grid.
     Args:
@@ -199,12 +187,12 @@ def solve(grid,diagonal=True):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
-    result = search(grid_values(grid),diagonal)
+    result = search(grid_values(grid))
     return result if result else grid_values(grid)
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    display(solve(diag_sudoku_grid, True))
+    display(solve(diag_sudoku_grid))
 
     try:
         from visualize import visualize_assignments
