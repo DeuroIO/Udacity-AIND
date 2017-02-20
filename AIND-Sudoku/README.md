@@ -3,11 +3,16 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: 
+When:We applied the naked twins elimination when we try to reduce time complexitaty of the Sudoku problems along with eliminate and only_choice techniques. 
+What:So the naked twins algorithms will: 
+    1. look for the combinations of naked twins. 
+    2. for each combination of naked twins, reduce the Sudoku problems by removing digits vertically, horizontally as well as inside the 9*9 box.
+Note:There are more heruistics we can use to reduce time complexitaty of Sudoku problems. I think most of the algorithms are powered by constraint propagation & satisfaction.
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: We basically use diagonal_unitlist, diagonal_list and diagonal_peers instead of original ones when we try to apply eliminate,reduce as well as search algorithms. Constraint propagation and satisfyication are the underlying AI building blocks that support eliminate,reduce and search algorithms.
 
 ### Install
 
