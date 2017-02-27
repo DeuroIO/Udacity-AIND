@@ -147,6 +147,7 @@ class CustomPlayer:
                 score,move = self.alphabeta(game,depth) if self.method == 'alphabeta' else self.minimax(game,depth)
 
                 if score == float("+inf"):
+                    # find the best path.break and return
                     break
 
                 if score != float("-inf"):
@@ -199,21 +200,26 @@ class CustomPlayer:
             next_move = (-1,-1)
 
             if maximizing_player is False:
+                # min part: set highest_score to +inf and keep reduce it.
                 highest_score = float("+inf")
 
             for move in legal_moves:
+                #recursively call minmax algo
                 potentialScore = self.minimax(game.forecast_move(move),depth-1,not maximizing_player)[0]
                 if maximizing_player:
+                    #max part: max
                     if potentialScore > highest_score:
                         highest_score = potentialScore
                         next_move = move
                 else:
+                    #min part: min
                     if potentialScore < highest_score:
                         highest_score = potentialScore
                         next_move = move
 
             return (highest_score,next_move)
         else:
+            # if depth is 0, we hit the base case for this recusive function. So we just call score function
             return (self.score(game,game.active_player if maximizing_player else game.inactive_player), (-1,-1))
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -263,24 +269,32 @@ class CustomPlayer:
             next_move = (-1,-1)
 
             if maximizing_player is False:
+                # min part: set highest_score to +inf and keep reduce it.
                 highest_score = float("+inf")
 
             for move in legal_moves:
+                #recursively call alphabeta algo
                 potentialScore = self.alphabeta(game.forecast_move(move),depth-1,alpha,beta,not maximizing_player)[0]
                 if maximizing_player:
+                    #max part: max
                     if potentialScore > highest_score:
                         highest_score = potentialScore
                         next_move = move
+                    #update alpha for max
                     alpha = max(alpha,highest_score)
 
                 else:
+                    #min part: min
                     if potentialScore < highest_score:
                         highest_score = potentialScore
                         next_move = move
+                    #update beta for min
                     beta = min(beta,highest_score)
-
+                
+                #alpha-beta pruning if no better value can be found
                 if beta <= alpha:
                     break
             return (highest_score,next_move)
         else:
+            # if depth is 0, we hit the base case for this recusive function. So we just call score function
             return (self.score(game,game.active_player if maximizing_player else game.inactive_player), (-1,-1))
