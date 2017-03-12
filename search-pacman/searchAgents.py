@@ -447,7 +447,14 @@ def foodHeuristic(state, problem):
   """
   position, foodGrid = state
   "*** YOUR CODE HERE ***"
-  return 0
+  foodposition = foodGrid.asList()
+  """ Using Maze Distance to farthest food as a heuristic (Maze distance is bfs )"""
+  heuristic = [0]
+  for pos in foodposition:
+      heuristic.append(util.manhattanDistance(pos,position))
+  return max(heuristic)
+  # return 0
+
 
 class ClosestDotSearchAgent(SearchAgent):
   "Search for all food using a sequence of searches"
@@ -475,7 +482,9 @@ class ClosestDotSearchAgent(SearchAgent):
     problem = AnyFoodSearchProblem(gameState)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """ Using BFS defined in search.py to find the goal"""
+    from search import breadthFirstSearch
+    return breadthFirstSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
   """
@@ -511,7 +520,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     x,y = state
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return state in self.food.asList()
 
 ##################
 # Mini-contest 1 #
