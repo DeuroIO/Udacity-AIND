@@ -59,11 +59,11 @@ class AirCargoProblem(Problem):
             '''
             loads = []
             # TODO create all load ground actions from the domain Load action
-            for cargo in self.cargos:
-                for plane in self.planes:
+            for plane in self.planes:
+                for cargo in self.cargos:
                     for airport in self.airports:
-                        precond_pos = [expr("At({}, {})".format(cargo, airport)), expr("At({}, {})".format(plane, airport))]
                         precond_neg = []
+                        precond_pos = [expr("At({}, {})".format(cargo, airport)), expr("At({}, {})".format(plane, airport))]
 
                         effect_add = [expr("In({}, {})".format(cargo, plane))]
                         effect_rem = [expr("At({}, {})".format(cargo, airport))]
@@ -81,11 +81,11 @@ class AirCargoProblem(Problem):
             '''
             unloads = []
             # TODO create all Unload ground actions from the domain Unload action
-            for cargo in self.cargos:
-                for plane in self.planes:
+            for plane in self.planes:
+                for cargo in self.cargos:
                     for airport in self.airports:
-                        precond_pos = [expr("In({}, {})".format(cargo, plane)), expr("At({}, {})".format(plane, airport))]
                         precond_neg = []
+                        precond_pos = [expr("In({}, {})".format(cargo, plane)), expr("At({}, {})".format(plane, airport))]
 
                         effect_add = [expr("At({}, {})".format(cargo, airport))]
                         effect_rem = [expr("In({}, {})".format(cargo, plane))]
@@ -102,16 +102,17 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             '''
             flys = []
-            for fr in self.airports:
-                for to in self.airports:
-                    if fr != to:
-                        for p in self.planes:
-                            precond_pos = [expr("At({}, {})".format(p, fr)),
-                                           ]
+            for fromAirport in self.airports:
+                for toAirport in self.airports:
+                    if fromAirport != toAirport:
+                        for plane in self.planes:
                             precond_neg = []
-                            effect_add = [expr("At({}, {})".format(p, to))]
-                            effect_rem = [expr("At({}, {})".format(p, fr))]
-                            fly = Action(expr("Fly({}, {}, {})".format(p, fr, to)),
+                            precond_pos = [expr("At({}, {})".format(plane, fromAirport)),
+                                           ]
+
+                            effect_add = [expr("At({}, {})".format(plane, toAirport))]
+                            effect_rem = [expr("At({}, {})".format(plane, fromAirport))]
+                            fly = Action(expr("Fly({}, {}, {})".format(plane, fromAirport, toAirport)),
                                          [precond_pos, precond_neg],
                                          [effect_add, effect_rem])
                             flys.append(fly)
@@ -242,6 +243,19 @@ def air_cargo_p1() -> AirCargoProblem:
             ]
     return AirCargoProblem(cargos, planes, airports, init, goal)
 
+def generate_neg_helperl(pos_list,cargos,planes,airports) -> list:
+    s = set()
+    for pos in pos_list:
+        pos = str(pos)
+        for plane in planes:
+            for cargo in cargos:
+                for airport in airports:
+                    if 'At' in pos and cargo in pos and airport not in pos:
+                        s.add(expr('At({},{})'.format(cargo,airport)))
+                    if 'At' in pos and plane in pos and airport not in pos:
+                        s.add(expr('At({},{})'.format(plane,airport)))
+                    s.add(expr('In({},{})'.format(cargo, plane)))
+    return list(s)
 
 def air_cargo_p2() -> AirCargoProblem:
     # TODO implement Problem 2 definition
@@ -256,7 +270,7 @@ def air_cargo_p2() -> AirCargoProblem:
            expr('At(P2,JFK)'),
            expr('At(P3,ATL)')]
 
-    neg = create_neg_list(pos,cargos,planes,airports)
+    neg = generate_neg_helperl(pos,cargos,planes,airports)
     init = FluentState(pos,neg)
     goal = [expr('At(C1,JFK)'),expr('At(C2,SFO)'),expr('At(C3,SFO)')]
     return AirCargoProblem(cargos,planes,airports,init,goal)
@@ -275,22 +289,8 @@ def air_cargo_p3() -> AirCargoProblem:
            expr('At(P1,SFO)'),
            expr('At(P2,JFK)')]
 
-    neg = create_neg_list(pos,cargos,planes,airports)
+    neg = generate_neg_helperl(pos,cargos,planes,airports)
     init = FluentState(pos, neg)
     goal = [expr('At(C1,JFK)'), expr('At(C3,JFK)'), expr('At(C2,SFO)'),expr('At(C4,SFO)')]
 
     return AirCargoProblem(cargos, planes, airports, init, goal)
-
-def create_neg_list(pos_list,cargos,planes,airports) -> list:
-    s = set()
-    for item in pos_list:
-        item = str(item)
-        for c in cargos:
-            for p in planes:
-                for a in airports:
-                    if 'At' in item and c in item and a not in item:
-                        s.add(expr('At({},{})'.format(c,a)))
-                    if 'At' in item and p in item and a not in item:
-                        s.add(expr('At({},{})'.format(p,a)))
-                    s.add(expr('In({},{})'.format(c, p)))
-    return list(s)
