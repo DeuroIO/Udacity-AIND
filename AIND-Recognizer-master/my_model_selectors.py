@@ -47,7 +47,7 @@ class ModelSelector(object):
             return None
 
 
-class SelectorConstant(ModelSelector):
+class   (ModelSelector):
     """ select the model with value self.n_constant
 
     """
@@ -77,7 +77,32 @@ class SelectorBIC(ModelSelector):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
         # TODO implement model selection based on BIC scores
-        raise NotImplementedError
+        score_and_n = []
+        for n in range(self.min_n_components, self.max_n_components):
+            try:
+                hmm_model = GaussianHMM(n_components=n, covariance_type="diag", n_iter=1000,
+                                        random_state=self.random_state, verbose=self.verbose).fit(self.X,
+                                                                                                  self.lengths)
+                logl = hmm_model.score(self.X, self.lengths)
+                #https://rdrr.io/cran/HMMpa/man/AIC_HMM.html
+                # p = m ^ 2 + km - 1
+                # m = n: number of states in the Markov chain of the model
+                # k = : single numeric value representing the number of parameters of the underlying distribution of the observation process (e.g. k=2 for the normal distribution (mean and standard deviation)).
+                num_of_parameter = n * n + n * self.X.shape[1] - 1
+                bic = -2 * logl + num_of_parameter * np.log(len(self.X))
+                score_and_n.append([bic, n])
+
+            except:
+                # just ignore the error case
+                pass
+
+        if len(score_and_n) > 0:
+            _, highest_n =  min(score_and_n)
+            hmm_model = GaussianHMM(n_components=highest_n, covariance_type="diag", n_iter=1000,
+                                    random_state=self.random_state, verbose=self.verbose).fit(self.X, self.lengths)
+            return hmm_model
+        else:
+            return self.base_model(self.n_constant)
 
 
 class SelectorDIC(ModelSelector):
@@ -93,7 +118,33 @@ class SelectorDIC(ModelSelector):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
         # TODO implement model selection based on DIC scores
-        raise NotImplementedError
+        score_and_n = []
+        for n in range(self.min_n_components, self.max_n_components):
+            try:
+                hmm_model = GaussianHMM(n_components=n, covariance_type="diag", n_iter=1000,
+                                        random_state=self.random_state, verbose=self.verbose).fit(self.X,
+                                                                                                  self.lengths)
+                logl_i = hmm_model.score(self.X, self.lengths)
+                log_rest_list = []
+                for word in self.hwords:
+                    if word != self.this_word:
+                        X, lengths = self.hwords[word]
+                        log_rest_list.append(hmm_model.score(X, lengths))
+                logl_rest = np.average(log_rest_list)
+                dic = logl_i - logl_rest
+                score_and_n.append([dic, n])
+
+            except:
+                # just ignore the error case
+                pass
+
+        if len(score_and_n) > 0:
+            _, highest_n = max(score_and_n)
+            hmm_model = GaussianHMM(n_components=highest_n, covariance_type="diag", n_iter=1000,
+                                    random_state=self.random_state, verbose=self.verbose).fit(self.X, self.lengths)
+            return hmm_model
+        else:
+            return self.base_model(self.n_constant)
 
 
 class SelectorCV(ModelSelector):
@@ -104,5 +155,30 @@ class SelectorCV(ModelSelector):
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection using CV
-        raise NotImplementedError
+        # if length of sequences is less than 2, we just return the base_model, because KFold requires splits to be at least 2.
+        if len(self.sequences) < 2:
+            return self.base_model(self.n_constant)
+
+        score_and_n = []
+        for n in range(self.min_n_components, self.max_n_components):
+            scores_array = []
+            split_method = KFold(n_splits=min(3,len(self.sequences)))
+            for cv_train_idx, cv_test_idx in split_method.split(self.sequences):
+                trainX, trainlengths = combine_sequences(cv_train_idx, self.sequences)
+                try:
+                    hmm_model = GaussianHMM(n_components=n, covariance_type="diag", n_iter=1000,
+                                            random_state=self.random_state, verbose=self.verbose).fit(trainX, trainlengths)
+                    testX, testlengths = combine_sequences(cv_test_idx, self.sequences)
+                    scores_array.append(hmm_model.score(testX, testlengths))
+                except:
+                    #just ignore the error case
+                    pass
+            if len(scores_array) > 0:
+                score_and_n.append([np.average(scores_array), n])
+        if len(score_and_n) > 0:
+            _, highest_n = max(score_and_n)
+            hmm_model = GaussianHMM(n_components=highest_n, covariance_type="diag", n_iter=1000,
+                                    random_state=self.random_state, verbose=self.verbose).fit(self.X, self.lengths)
+            return hmm_model
+        else:
+            return self.base_model(self.n_constant)
