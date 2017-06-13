@@ -1,2 +1,8 @@
 *.pyc
-*.png
+.DS_Store
+dog-project/dogImages/
+dog-project/lfw/
+dog-project/saved_models/weights.best.from_scratch.hdf5
+dog-project/saved_models/weights.best.vgg16.hdf5
+dog-project/.ipynb_checkpoints/
+dog-project/bottleneck_features/DogVGG16Data.npz
