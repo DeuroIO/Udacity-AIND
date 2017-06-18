@@ -1,2 +1,3 @@
 *.pyc
 .DS_Store
+term2/dog-project/saved_models/weights.best.from_scratch.hdf5
