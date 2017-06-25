@@ -2,3 +2,47 @@ GetNewFactIntent a fact
 GetNewFactIntent tell me a fact
 GetNewFactIntent give me a fact
 GetNewFactIntent give me something
+GetNewFactIntent get me a fact
+GetNewFactIntent get a fact
+GetNewFactIntent get me something
+GetNewFactIntent get something
+GetNewFactIntent tell a fact
+GetNewFactIntent give a fact
+GetNewFactIntent give something
+GetNewFactIntent what is up
+GetNewFactIntent speak me a fact
+GetNewFactIntent speak a fact
+GetNewFactIntent speak something
+GetNewFactIntent speak me something
+GetNewYearFactIntent a fact
+GetNewYearFactIntent tell me a fact
+GetNewYearFactIntent give me a fact
+GetNewYearFactIntent give me something
+GetNewYearFactIntent get me a fact
+GetNewYearFactIntent get a fact
+GetNewYearFactIntent get me something
+GetNewYearFactIntent get something
+GetNewYearFactIntent tell a fact
+GetNewYearFactIntent give a fact
+GetNewYearFactIntent give something
+GetNewYearFactIntent what is up
+GetNewYearFactIntent speak me a fact
+GetNewYearFactIntent speak a fact
+GetNewYearFactIntent speak something
+GetNewYearFactIntent speak me something
+GetNewYearFactIntent a {FACT_YEAR} fact
+GetNewYearFactIntent tell me a {FACT_YEAR} fact
+GetNewYearFactIntent give me a {FACT_YEAR} fact
+GetNewYearFactIntent give me something on {FACT_YEAR}
+GetNewYearFactIntent get me a {FACT_YEAR} fact
+GetNewYearFactIntent get a {FACT_YEAR} fact
+GetNewYearFactIntent get me something {FACT_YEAR}
+GetNewYearFactIntent get something {FACT_YEAR}
+GetNewYearFactIntent tell a {FACT_YEAR} fact
+GetNewYearFactIntent give a {FACT_YEAR} fact
+GetNewYearFactIntent give something {FACT_YEAR}
+GetNewYearFactIntent what is up {FACT_YEAR}
+GetNewYearFactIntent speak me a {FACT_YEAR} fact
+GetNewYearFactIntent speak a {FACT_YEAR} fact
+GetNewYearFactIntent speak something {FACT_YEAR}
+GetNewYearFactIntent speak me something {FACT_YEAR}

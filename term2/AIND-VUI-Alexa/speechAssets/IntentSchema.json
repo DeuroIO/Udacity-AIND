@@ -4,6 +4,12 @@
       "intent": "GetNewFactIntent"
     },
     {
+      "intent": "GetNewYearFactIntent",
+      "slots": [
+        {"name":"FACT_YEAR"}
+      ]
+    },
+    {
       "intent": "AMAZON.HelpIntent"
     },
     {
