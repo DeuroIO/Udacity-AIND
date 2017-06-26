@@ -6,7 +6,10 @@
     {
       "intent": "GetNewYearFactIntent",
       "slots": [
-        {"name":"FACT_YEAR"}
+        {
+          "name":"FACT_YEAR",
+          "type":"AMAZON.FOUR_DIGIT_NUMBER"
+        }
       ]
     },
     {
