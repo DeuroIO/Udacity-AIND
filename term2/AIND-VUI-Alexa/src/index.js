@@ -3,7 +3,18 @@ var Alexa = require('alexa-sdk');
 var APP_ID = undefined;  // can be replaced with your app ID if publishing
 var facts = require('./facts');
 var GET_FACT_MSG_EN = [
-    "Here's your fact: "
+    "Here's your fact: ",
+    "A cool fact is: ",
+    "Do you know that ",
+    "Not sure if you know, but ",
+    "A interesting fact is that ",
+    "Here's one fact: "
+]
+var GET_REPROMPT_MESSAGE_EN = [
+    "How about a fact of another year? ",
+    "Which year do you want the fact come from? ",
+    "If you want another fact, please let me know.",
+    "More facts will be better, right? "
 ]
 // Test hooks - do not remove!
 exports.GetFactMsg = GET_FACT_MSG_EN;
@@ -18,7 +29,8 @@ var languageStrings = {
         "translation": {
             "FACTS": facts.FACTS_EN,
             "SKILL_NAME": "My History Facts",  // OPTIONAL change this to a more descriptive name
-            "GET_FACT_MESSAGE": GET_FACT_MSG_EN[0],
+            "GET_FACT_MESSAGE": GET_FACT_MSG_EN,
+            "GET_REPROMPT_MESSAGE": GET_REPROMPT_MESSAGE_EN,
             "HELP_MESSAGE": "You can say tell me a fact, or, you can say exit... What can I help you with?",
             "HELP_REPROMPT": "What can I help you with?",
             "STOP_MESSAGE": "Goodbye!"
@@ -64,24 +76,30 @@ var handlers = {
         // Use this.t() to get corresponding language data
         var factArr = this.t('FACTS');
         var randomFact = randomPhrase(factArr);
+        var randomGetFactMessage = randomPhrase(this.t("GET_FACT_MESSAGE"))
 
         // Create speech output
-        var speechOutput = this.t("GET_FACT_MESSAGE") + randomFact;
-        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact)
+        var speechOutput = randomGetFactMessage + randomFact;
+        var repromptSpeech = randomPhrase(this.t("GET_REPROMPT_MESSAGE"));
+        this.emit(':askWithCard', speechOutput, repromptSpeech, this.t("SKILL_NAME"), randomFact)
     },
     'GetNewYearFactIntent': function () {
         //TODO your code here
         var factArr = this.t('FACTS');
         var year = this.event.request.intent.slots["FACT_YEAR"].value;
-        var phrase_exist = '';
-        phrase_exist = findPhraseByYear(factArr,year);
+        var phrase_exist = findPhraseByYear(factArr,year);
         var randomFact = randomPhrase(factArr);
         if (phrase_exist != null) {
-            randomFact = phrase_exist
+            randomFact = phrase_exist;
+        } else {
+            this.emit('GetFact');
+            return
         }
         // Create speech output
-        var speechOutput = this.t("GET_FACT_MESSAGE") + randomFact;
-        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact);
+        var randomGetFactMessage = randomPhrase(this.t("GET_FACT_MESSAGE"));
+        var speechOutput = randomGetFactMessage + randomFact;
+        var repromptSpeech = randomPhrase(this.t("GET_REPROMPT_MESSAGE"));
+        this.emit(':askWithCard', speechOutput, repromptSpeech,this.t("SKILL_NAME"), randomFact);
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = this.t("HELP_MESSAGE");
