@@ -72,11 +72,16 @@ var handlers = {
     'GetNewYearFactIntent': function () {
         //TODO your code here
         var factArr = this.t('FACTS');
-        var randomFact = factArr[0];
-
+        var year = this.event.request.intent.slots["FACT_YEAR"].value;
+        var phrase_exist = '';
+        phrase_exist = findPhraseByYear(factArr,year);
+        var randomFact = randomPhrase(factArr);
+        if (phrase_exist != null) {
+            randomFact = phrase_exist
+        }
         // Create speech output
         var speechOutput = this.t("GET_FACT_MESSAGE") + randomFact;
-        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact)
+        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact);
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = this.t("HELP_MESSAGE");
@@ -97,4 +102,16 @@ function randomPhrase(phraseArr) {
     var i = 0;
     i = Math.floor(Math.random() * phraseArr.length);
     return (phraseArr[i]);
+};
+
+function findPhraseByYear(factArr,year) {
+    if (year == null) {
+        return null;
+    }
+    for (var i = 0; i < factArr.length ; i++) {
+        if (factArr[i].indexOf(year.toString()) > -1) {
+            return factArr[i];
+        }
+    }
+    return null;
 };
