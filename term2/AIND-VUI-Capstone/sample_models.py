@@ -102,7 +102,7 @@ def deep_rnn_model(input_dim, units, recur_layers, output_dim=29):
     rnn_arrs = []
     batch_norm_arrs = [] 
     for x in range(0, recur_layers):
-        simple_rnn = SimpleRNN(units, activation='relu', return_sequences=True, implementation=2, name="rnn_{}".format(x))(prev_input)
+        simple_rnn = GRU(units, activation='relu', return_sequences=True,implementation=2, name="rnn_{}".format(x))(prev_input)
         rnn_arrs.append(simple_rnn)
         batch_norm = BatchNormalization(name="bn_conv_{}".format(x))(simple_rnn)
         batch_norm_arrs.append(batch_norm)
