@@ -144,7 +144,7 @@ def final_model(input_dim,units, recur_layers, output_dim=29):
     prev_input = input_data
 
     for x in range(0, recur_layers):
-        bidir_rnn = Bidirectional(GRU(units, return_sequences=True, implementation=2, name='bidir_rnn_{}'.format(x)))(input_data)
+        bidir_rnn = Bidirectional(GRU(units, return_sequences=True, implementation=2, name='bidir_rnn_{}'.format(x)))(prev_input)
         batch_norm = BatchNormalization(name="bn_conv_{}".format(x))(bidir_rnn)
         prev_input = batch_norm
 
