@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras.models import Model
 from keras.layers import (BatchNormalization, Conv1D, Dense, Input, 
-    TimeDistributed, Activation, Bidirectional, SimpleRNN, GRU, LSTM)
+    TimeDistributed, Activation, Bidirectional, SimpleRNN, GRU, LSTM,Dropout)
 
 def simple_rnn_model(input_dim, output_dim=29):
     """ Build a recurrent network for speech 
@@ -135,19 +135,40 @@ def bidirectional_rnn_model(input_dim, units, output_dim=29):
     print(model.summary())
     return model
 
+def rnn_dropout_model(input_dim, units, activation, output_dim=29):
+    """ Build a recurrent network for speech
+        """
+    # Main acoustic input
+    input_data = Input(name='the_input', shape=(None, input_dim))
+    # Add recurrent layer
+    simp_rnn = GRU(units, activation=activation,return_sequences=True, implementation=2, name='rnn')(input_data)
+    # TODO: Add batch normalization
+    bn_rnn = BatchNormalization(name='bn_rnn')(simp_rnn)
+    drop_out = Dropout(0.4)(bn_rnn)
+    # TODO: Add a TimeDistributed(Dense(output_dim)) layer
+    time_dense = TimeDistributed(Dense(output_dim))(drop_out)
+    # Add softmax activation layer
+    y_pred = Activation('softmax', name='softmax')(time_dense)
+    # Specify the model
+    model = Model(inputs=input_data, outputs=y_pred)
+    model.output_length = lambda x: x
+    print(model.summary())
+    return model
+
+
 def final_model(input_dim,units, recur_layers, output_dim=29):
-    """ Build a deep network for speech 
-    """
+    """ Build a deep network for speech
+        """
     # Main acoustic input
     input_data = Input(name='the_input', shape=(None, input_dim))
     # TODO: Specify the layers in your network
     prev_input = input_data
-
+    
     for x in range(0, recur_layers):
         bidir_rnn = Bidirectional(GRU(units, return_sequences=True, implementation=2, name='bidir_rnn_{}'.format(x)))(prev_input)
         batch_norm = BatchNormalization(name="bn_conv_{}".format(x))(bidir_rnn)
         prev_input = batch_norm
-
+    
     # TODO: Add a TimeDistributed(Dense(output_dim)) layer
     time_dense = TimeDistributed(Dense(output_dim))(prev_input)
     # TODO: Add softmax activation layer
